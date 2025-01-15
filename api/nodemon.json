@@ -1,0 +1,6 @@
+{
+  "watch": ["script"],
+  "ext": "ts",
+  "ignore": ["node_modules"],
+  "exec": "ts-node -r dotenv/config ./script/server.ts dotenv_config_path=.env dotenv_config_silent=true"
+}

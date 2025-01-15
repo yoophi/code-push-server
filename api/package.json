@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node ./bin/script/server.js",
     "start:env": "node -r dotenv/config ./bin/script/server.js dotenv_config_path=.env dotenv_config_silent=true",
+    "dev:env": "nodemon ./nodemon.json",
     "clean": "rimraf bin",
     "build": "tsc && shx cp -r ./script/views ./bin/script",
     "prettier": "prettier --write \"./**/*.ts\"",
@@ -65,10 +66,12 @@
     "@typescript-eslint/parser": "^6.0.0",
     "dotenv": "^16.0.3",
     "eslint": "^8.45.0",
+    "nodemon": "^3.1.9",
     "prettier": "^2.8.8",
     "rimraf": "^5.0.1",
     "shx": "^0.3.4",
     "supertest": "^6.3.3",
+    "ts-node": "^10.9.2",
     "typescript": "^5.0.4"
   }
 }
