@@ -247,6 +247,7 @@ export function getManagementRouter(config: ManagementConfig): Router {
   });
 
   router.get("/apps", (req: Request, res: Response, next: (err?: any) => void): any => {
+    console.log('GET /apps')
     const accountId: string = req.user.id;
     storage
       .getApps(accountId)
@@ -317,6 +318,7 @@ export function getManagementRouter(config: ManagementConfig): Router {
   });
 
   router.get("/apps/:appName", (req: Request, res: Response, next: (err?: any) => void): any => {
+    console.log('GET /apps/:appName')
     const accountId: string = req.user.id;
     const appName: string = req.params.appName;
     let storageApp: storageTypes.App;
@@ -348,13 +350,16 @@ export function getManagementRouter(config: ManagementConfig): Router {
         return storage.getDeployments(accountId, appId);
       })
       .then((deployments: storageTypes.Deployment[]) => {
+        console.log('deployments', deployments)
         const invalidationPromises: Promise<void>[] = deployments.map((deployment: storageTypes.Deployment) => {
           return invalidateCachedPackage(deployment.key);
         });
 
-        return q.all(invalidationPromises).catch((error: Error) => {
-          invalidationError = error; // Do not block app deletion on cache invalidation
-        });
+        console.log('invalidationPromises', invalidationPromises)
+        // TODO: Uncomment this when we have a cache
+        // return q.all(invalidationPromises).catch((error: Error) => {
+        //   invalidationError = error; // Do not block app deletion on cache invalidation
+        // });
       })
       .then(() => {
         return storage.removeApp(accountId, appId);
@@ -503,6 +508,7 @@ export function getManagementRouter(config: ManagementConfig): Router {
   });
 
   router.get("/apps/:appName/deployments", (req: Request, res: Response, next: (err?: any) => void): any => {
+    console.log('GET /apps/:appName/deployments')
     const accountId: string = req.user.id;
     const appName: string = req.params.appName;
     let appId: string;
@@ -601,7 +607,8 @@ export function getManagementRouter(config: ManagementConfig): Router {
       })
       .then((deployment: storageTypes.Deployment) => {
         deploymentId = deployment.id;
-        return invalidateCachedPackage(deployment.key);
+        // TODO: Uncomment this when we have a cache
+        // return invalidateCachedPackage(deployment.key);
       })
       .then(() => {
         return storage.removeDeployment(accountId, appId, deploymentId);
@@ -956,31 +963,33 @@ export function getManagementRouter(config: ManagementConfig): Router {
   });
 
   router.get("/apps/:appName/deployments/:deploymentName/metrics", (req: Request, res: Response, next: (err?: any) => void): any => {
-    if (!redisManager.isEnabled) {
-      res.send({ metrics: {} });
-    } else {
-      const accountId: string = req.user.id;
-      const appName: string = req.params.appName;
-      const deploymentName: string = req.params.deploymentName;
-      let appId: string;
+    res.send({ metrics: {} });
+    // TODO: implement metrics
+    // if (!redisManager.isEnabled) {
+    //   res.send({ metrics: {} });
+    // } else {
+    //   const accountId: string = req.user.id;
+    //   const appName: string = req.params.appName;
+    //   const deploymentName: string = req.params.deploymentName;
+    //   let appId: string;
 
-      nameResolver
-        .resolveApp(accountId, appName)
-        .then((app: storageTypes.App) => {
-          appId = app.id;
-          throwIfInvalidPermissions(app, storageTypes.Permissions.Collaborator);
-          return nameResolver.resolveDeployment(accountId, appId, deploymentName);
-        })
-        .then((deployment: storageTypes.Deployment): Promise<redis.DeploymentMetrics> => {
-          return redisManager.getMetricsWithDeploymentKey(deployment.key);
-        })
-        .then((metrics: redis.DeploymentMetrics) => {
-          const deploymentMetrics: restTypes.DeploymentMetrics = converterUtils.toRestDeploymentMetrics(metrics);
-          res.send({ metrics: deploymentMetrics });
-        })
-        .catch((error: error.CodePushError) => errorUtils.restErrorHandler(res, error, next))
-        .done();
-    }
+    //   nameResolver
+    //     .resolveApp(accountId, appName)
+    //     .then((app: storageTypes.App) => {
+    //       appId = app.id;
+    //       throwIfInvalidPermissions(app, storageTypes.Permissions.Collaborator);
+    //       return nameResolver.resolveDeployment(accountId, appId, deploymentName);
+    //     })
+    //     .then((deployment: storageTypes.Deployment): Promise<redis.DeploymentMetrics> => {
+    //       return redisManager.getMetricsWithDeploymentKey(deployment.key);
+    //     })
+    //     .then((metrics: redis.DeploymentMetrics) => {
+    //       const deploymentMetrics: restTypes.DeploymentMetrics = converterUtils.toRestDeploymentMetrics(metrics);
+    //       res.send({ metrics: deploymentMetrics });
+    //     })
+    //     .catch((error: error.CodePushError) => errorUtils.restErrorHandler(res, error, next))
+    //     .done();
+    // }
   });
 
   router.post(

@@ -3,6 +3,7 @@
 
 import * as api from "./api";
 import { AzureStorage } from "./storage/azure-storage";
+import { S3PGStorage } from "./storage/s3-pg-storage";
 import { fileUploadMiddleware } from "./file-upload-manager";
 import { JsonStorage } from "./storage/json-storage";
 import { RedisManager } from "./redis-manager";
@@ -41,7 +42,9 @@ export function start(done: (err?: any, server?: express.Express, storage?: Stor
 
   q<void>(null)
     .then(async () => {
-      if (useJsonStorage) {
+      if (process.env.USE_S3_PG_STORAGE === "true") {
+        storage = new S3PGStorage();
+      } else if (useJsonStorage) {
         storage = new JsonStorage();
       } else if (!process.env.AZURE_KEYVAULT_ACCOUNT) {
         storage = new AzureStorage();
